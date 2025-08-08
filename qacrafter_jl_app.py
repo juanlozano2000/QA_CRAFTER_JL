@@ -33,6 +33,11 @@ dni = st.text_input("DNI", "Numero_dni")
 usuario = st.text_input("Usuario", "usuario01")
 clave = st.text_input("Clave", "1003")
 
+word_name = st.text_input(
+    "📚 Nombre del documento word:",
+    f"{sanitized_name}"
+)
+
 # --------- CACHÉ PARA CARGA DE ACCIONES ---------
 @st.cache_data
 def cargar_acciones(ruta):
@@ -126,6 +131,20 @@ class {class_name}:
                         codigo += f"        {linea}\n"
                 else:
                     codigo += f"        # 🔴 Acción no reconocida: \"{paso}\"\n"
+
+            # Al final del for, cuando quieras agregar el bloque fijo:
+        codigo += (
+            '\n        '
+            '        # CREACION DEL DOCUMENTO WORD\n'
+            '        # Redimensionar imágenes\n'
+            '        resized_images = []  # Lista para los nombres redimensionados\n'
+            '        for image_name in grupo_de_imagenes:\n'
+            '            tools.achicarImgs(image_name)\n'
+            '            resized_images.append(f"{image_name}_r")  # Agregar nombre redimensionado\n'
+            '        time.sleep(5)\n'
+            f'        tools.create_word_with_selected_images("{word_name}.docx", resized_images, f"{dni}, {usuario}, {clave}")\n'
+        )
+
 
         # Mostrar y ofrecer descarga y copiar
         st.success(f"✅ Código generado para {plataforma}")
