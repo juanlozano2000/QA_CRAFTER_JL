@@ -28,6 +28,13 @@ def build_code(plataforma: str, pasos: list[str], acciones: dict, sanitized_name
             code += f'        tools.click_xpath("//{nombre}")  # Reemplazar con xpath real\n'
             continue
 
+        #esperar o descansar
+        m_espera = re.match(r"(?:esperar|descansar)\s+(\d+)\s+segundos?", paso, re.I)
+        if m_espera:
+            num_segundos = m_espera.group(1)
+            code += f"        time.sleep({num_segundos})\n"
+            continue
+
         norm = normalizar(paso)
         if norm in claves_norm:
             for linea in acciones[claves_norm[norm]].splitlines():

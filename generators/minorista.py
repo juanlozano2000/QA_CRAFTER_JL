@@ -23,11 +23,18 @@ def build_code(plataforma: str, pasos: list[str], acciones: dict, sanitized_name
     claves_norm = {normalizar(k): k for k in acciones.keys()}
 
     for paso in [p for p in pasos if p.strip()]:
-        # ✅ Usar \s+ (no \\s+)
+        # ✅ Usar \s+ (no \\s+) - Clickear o click
         m = re.match(r"(?:click|clickear)(?: en| boton)?\s+(.+)", paso, re.I)
         if m:
             nombre = m.group(1).strip().replace(" ", "_")
             code += f'        tools.click_xpath("//{nombre}")  # Reemplazar con xpath real\n'
+            continue
+
+        #esperar o descansar
+        m_espera = re.match(r"(?:esperar|descansar)\s+(\d+)\s+segundos?", paso, re.I)
+        if m_espera:
+            num_segundos = m_espera.group(1)
+            code += f"        time.sleep({num_segundos})\n"
             continue
 
         norm = normalizar(paso)
