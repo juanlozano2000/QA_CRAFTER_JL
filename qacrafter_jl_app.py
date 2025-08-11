@@ -40,7 +40,7 @@ st.markdown("""**_Ejemplo:_**
 - _click en tarjetas_  
 - _scrollear carrousel a la izq_  
 - _tomar foto_  
-- _click en boton pausar_""")
+- _esperar 5 segundos_""")
 entrada = st.text_area("Instrucciones:", height=200)
 
 # ----- Datos acciones -----
@@ -74,3 +74,4 @@ if st.button("✨ Generar Código"):
             file_name=f"test_{plataforma.lower()}_{'minorista' if type_app=='App Minorista' else 'mayorista'}.py",
             mime="text/x-python"
         )
+
