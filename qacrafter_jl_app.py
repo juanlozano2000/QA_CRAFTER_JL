@@ -2,6 +2,7 @@ import os, json
 import streamlit as st
 from io import StringIO
 from core.utils import cargar_acciones
+import streamlit.components.v1 as components
 from generators.minorista import build_code as build_minorista
 from generators.mayorista import build_code as build_mayorista
 
@@ -40,7 +41,9 @@ st.markdown("""**_Ejemplo:_**
 - _click en tarjetas_  
 - _scrollear carrousel a la izq_  
 - _tomar foto_  
-- _esperar 5 segundos_""")
+- _contains click_  
+- _contains esperar locador boton pausar_  
+- _esperar 3 segundos_""")
 entrada = st.text_area("Instrucciones:", height=200)
 
 # ----- Datos acciones -----
@@ -57,17 +60,38 @@ if st.button("✨ Generar Código"):
         st.warning("Por favor ingresa al menos un paso en el área de instrucciones.")
     else:
         pasos = [p for p in entrada.split("\n") if p.strip()]
-        if type_app == "App Minorista":
-            codigo = build_minorista(plataforma, pasos, acciones, sanitized_name,
-                                     dni, usuario, clave, word_name)
-        else:
-            codigo = build_mayorista(plataforma, pasos, acciones, sanitized_name, usuario, clave, word_name)
 
+        # ⚠️ Respetar la firma de cada builder:
+        # minorista.build_code(plataforma, pasos, acciones, sanitized_name, dni, usuario, clave, word_name)
+        # mayorista.build_code(plataforma, pasos, acciones, sanitized_name, word_name=None)
+        if type_app == "App Minorista":
+            codigo = build_minorista(
+                plataforma, pasos, acciones, sanitized_name,
+                dni, usuario, clave, word_name
+            )
+        else:
+            codigo = build_mayorista(
+                plataforma, pasos, acciones, sanitized_name, word_name
+            )
+
+        # ✅ Mostrar una sola vez
         st.success(f"✅ Código generado para {plataforma} - {type_app}")
         st.code(codigo, language="python")
 
-        from io import StringIO
-        buffer = StringIO(); buffer.write(codigo)
+        # ✅ Botón copiar (una sola vez)
+        components.html(f'''
+<button id="copy-btn">📋 Copiar código</button>
+<script>
+const code = {json.dumps(codigo)};
+document.getElementById("copy-btn").addEventListener("click", () => {{
+    navigator.clipboard.writeText(code);
+}});
+</script>
+''', height=50)
+
+        # ✅ Descargar (una sola vez)
+        buffer = StringIO()
+        buffer.write(codigo)
         st.download_button(
             label="📥 Descargar script",
             data=buffer.getvalue(),
