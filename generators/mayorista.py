@@ -42,7 +42,34 @@ def build_code(plataforma: str, pasos: list[str], acciones: dict, sanitized_name
             code += f'        tools.click_xpath("//{nombre}")  # Reemplazar con xpath real\n'
             continue
 
-        # 4) fallback JSON + fuzzy
+        # 4) contains esperar locador|locator <PALABRA>
+        m_wait_contains = re.match(r"contains\s+(?:esperar|expect)\s+(?:locador|locator)\s+(.+)", paso, re.I)
+        if m_wait_contains:
+            palabra = m_wait_contains.group(1).strip()
+            # Si puede venir con comillas simples, escapalas:
+            palabra = palabra.replace("'", "\\'")
+            if plataforma.lower() == "android":
+                # Texto visible o content-desc
+                xpath = f"//*[contains(@text, '{palabra}')]"
+            else:
+                # iOS: name/label/value
+                xpath = f"//*[contains(@label, '{palabra}')]"
+            code += f'        tools.expected_locator("{xpath}")\n'
+            continue
+
+        # 5) click / clickear contains <PALABRA>
+        if paso.lower().startswith(("contains click", "contains clickear")):
+            # quitar el prefijo que sea
+            if paso.lower().startswith("contains clickear"):
+                palabra = paso[len("contains clickear"):].strip()
+            else:
+                palabra = paso[len("contains click"):].strip()
+
+            attr = "text" if plataforma.lower() == "android" else "label"
+            code += f'        tools.click_xpath("//*[contains(@{attr}, \'{palabra}\')]")\n'
+            continue
+
+        # 6) fallback JSON + fuzzy
         norm = normalizar(paso)
         if norm in claves_norm:
             for linea in acciones[claves_norm[norm]].splitlines():
